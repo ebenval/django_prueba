@@ -1,0 +1,99 @@
+/* Estilos generales */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f4f4f4;
+}
+
+/* Header y Nav */
+header {
+    background: #2c3e50;
+    color: white;
+    padding: 1rem 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+header nav {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1rem;
+}
+
+header h1 {
+    font-size: 1.5rem;
+}
+
+header nav ul {
+    list-style: none;
+    display: flex;
+    gap: 2rem;
+}
+
+header nav a {
+    color: white;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+header nav a:hover {
+    color: #3498db;
+}
+
+/* Main content */
+.container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    min-height: 60vh;
+}
+
+main h2 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+main p {
+    margin-bottom: 1rem;
+}
+
+main a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+main a:hover {
+    text-decoration: underline;
+}
+
+/* Footer */
+footer {
+    background: #2c3e50;
+    color: white;
+    text-align: center;
+    padding: 2rem;
+    margin-top: 2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    header nav {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    header nav ul {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}

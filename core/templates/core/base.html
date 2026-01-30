@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Proyecto Django{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+</head>
+<body>
+    <header>
+        <nav>
+            <h1>mysite</h1>
+            <ul>
+                <li><a href="/">Inicio</a></li>
+                <li><a href="/admin/">Admin</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        {% block content %}
+        <p>Contenido aquí</p>
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Proyecto Django. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="{% static 'core/js/main.js' %}"></script>
+</body>
+</html>

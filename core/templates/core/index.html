@@ -1,0 +1,16 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Inicio - Proyecto Django{% endblock %}
+
+{% block content %}
+<h2>Bienvenido al Proyecto Django</h2>
+<p>Este es un proyecto de ejemplo con Django.</p>
+
+{% if user.is_authenticated %}
+<p>Hola, <strong>{{ user.username }}</strong>!</p>
+<a href="/admin/">Ir al Admin</a>
+{% else %}
+<p>Inicia sesión para continuar.</p>
+{% endif %}
+
+{% endblock %}
