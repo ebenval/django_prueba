@@ -1,0 +1,80 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Dashboard - Sistema de Gestión{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <h2>Bienvenido, {{ user.username }}</h2>
+    <p>Rol: <strong>{{ user_role|upper }}</strong></p>
+    
+    {% if user_role == 'admin' %}
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <h3>{{ total_productos }}</h3>
+                <p>Productos en Inventario</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ total_proveedores }}</h3>
+                <p>Proveedores Activos</p>
+            </div>
+            <div class="stat-card alert">
+                <h3>{{ productos_bajo_stock }}</h3>
+                <p>Productos con Stock Bajo</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ ventas_totales }}</h3>
+                <p>Total Unidades Vendidas</p>
+            </div>
+        </div>
+        
+        <div class="dashboard-actions">
+            <h3>Acciones Rápidas</h3>
+            <a href="{% url 'crear_producto' %}" class="btn btn-success">+ Nuevo Producto</a>
+            <a href="{% url 'crear_proveedor' %}" class="btn btn-success">+ Nuevo Proveedor</a>
+            <a href="{% url 'reportes' %}" class="btn btn-info">Ver Reportes</a>
+        </div>
+    {% else %}
+        <div class="dashboard-cliente">
+            <h3>Tus Compras Recientes</h3>
+            {% if ultimas_compras %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for venta in ultimas_compras %}
+                            <tr>
+                                <td>{{ venta.producto.nombre }}</td>
+                                <td>{{ venta.cantidad }}</td>
+                                <td>${{ venta.total_con_iva }}</td>
+                                <td><span class="badge badge-{{ venta.estado }}">{{ venta.get_estado_display }}</span></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No tienes compras registradas.</p>
+            {% endif %}
+        </div>
+    {% endif %}
+    
+    <div class="dashboard-menu">
+        <h3>Menú Principal</h3>
+        <ul>
+            <li><a href="{% url 'lista_productos' %}">Catálogo de Productos</a></li>
+            {% if user_role != 'cliente' %}
+                <li><a href="{% url 'lista_proveedores' %}">Gestión de Proveedores</a></li>
+            {% endif %}
+            <li><a href="{% url 'lista_ventas' %}">Mis Ventas</a></li>
+            {% if user_role == 'admin' %}
+                <li><a href="/admin/">Panel Administrativo</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

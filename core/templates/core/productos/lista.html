@@ -1,0 +1,51 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Productos - Sistema de Gestión{% endblock %}
+
+{% block content %}
+<div class="productos-container">
+    <h2>Catálogo de Productos</h2>
+    
+    <div class="filtros">
+        <form method="get" class="form-inline">
+            <input type="text" name="q" value="{{ busqueda }}" placeholder="Buscar producto..." class="form-control">
+            <select name="categoria" class="form-control">
+                <option value="">Todas las categorías</option>
+                <option value="hardware" {% if categoria == 'hardware' %}selected{% endif %}>Hardware</option>
+                <option value="software" {% if categoria == 'software' %}selected{% endif %}>Software</option>
+                <option value="accesorios" {% if categoria == 'accesorios' %}selected{% endif %}>Accesorios</option>
+                <option value="cables" {% if categoria == 'cables' %}selected{% endif %}>Cables</option>
+                <option value="memorias" {% if categoria == 'memorias' %}selected{% endif %}>Memorias</option>
+                <option value="fuentes" {% if categoria == 'fuentes' %}selected{% endif %}>Fuentes</option>
+            </select>
+            <label><input type="checkbox" name="bajo_stock"> Stock Bajo</label>
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+        </form>
+    </div>
+    
+    <div class="productos-grid">
+        {% for producto in productos %}
+            <div class="producto-card {% if producto.alertar_stock_bajo %}stock-bajo{% endif %}">
+                {% if producto.imagen %}
+                    <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
+                {% else %}
+                    <img src="https://via.placeholder.com/200" alt="Sin imagen">
+                {% endif %}
+                <div class="producto-info">
+                    <h3>{{ producto.nombre }}</h3>
+                    <p class="referencia">{{ producto.numero_referencia }}</p>
+                    <p class="categoria">{{ producto.get_categoria_display }}</p>
+                    <p class="precio">${{ producto.precio_venta }}</p>
+                    <p class="stock">Stock: <strong>{{ producto.stock_actual }}</strong></p>
+                    {% if producto.alertar_stock_bajo %}
+                        <p class="alert-stock">⚠️ Stock bajo</p>
+                    {% endif %}
+                    <a href="{% url 'detalle_producto' producto.pk %}" class="btn btn-info">Ver Detalles</a>
+                </div>
+            </div>
+        {% empty %}
+            <p>No hay productos disponibles.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Registro - Sistema de Gestión{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-box">
+        <h2>Crear Cuenta</h2>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        <form method="post" class="form">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ form.username }}
+            </div>
+            <div class="form-group">
+                {{ form.email }}
+            </div>
+            <div class="form-group">
+                {{ form.password1 }}
+            </div>
+            <div class="form-group">
+                {{ form.password2 }}
+            </div>
+            <button type="submit" class="btn btn-primary">Registrarse</button>
+        </form>
+        <p class="text-center">¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia sesión aquí</a></p>
+    </div>
+</div>
+{% endblock %}
