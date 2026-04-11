@@ -1,0 +1,148 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ producto.nombre }} - Detalle{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+
+    {# Mensajes flash #}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+
+    {# Barra de navegación superior: enlace para volver al listado #}
+    <div style="margin-bottom:1rem;">
+        <a href="{% url 'lista_productos' %}" style="color:#3498db; text-decoration:none;">← Volver al catálogo</a>
+    </div>
+
+    {#
+        Alerta de stock bajo al principio de la página, bien visible.
+        stock_bajo viene del contexto calculado en la vista:
+            context['stock_bajo'] = producto.alertar_stock_bajo()
+    #}
+    {% if stock_bajo %}
+        <div class="alert alert-danger" style="margin-bottom:1.5rem;">
+            ⚠️ <strong>Stock bajo:</strong> Este producto tiene solo {{ producto.stock_actual }} unidades,
+            por debajo del 90% del mínimo ({{ producto.stock_minimo }} uds.). Contacta al proveedor.
+        </div>
+    {% endif %}
+
+    {# Layout de dos columnas: imagen a la izquierda, datos a la derecha #}
+    <div style="display:grid; grid-template-columns:1fr 2fr; gap:2rem; align-items:start;">
+
+        {# Columna izquierda: imagen #}
+        <div>
+            {% if producto.imagen %}
+                <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}"
+                     style="width:100%; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+            {% else %}
+                <div style="width:100%; height:280px; background:#ecf0f1; border-radius:8px;
+                            display:flex; align-items:center; justify-content:center;
+                            font-size:4rem; color:#bdc3c7;">
+                    📦
+                </div>
+            {% endif %}
+
+            {# Acciones de admin bajo la imagen #}
+            {% if user.role.role == 'admin' %}
+                <div style="margin-top:1rem; display:flex; flex-direction:column; gap:0.5rem;">
+                    <a href="{% url 'editar_producto' producto.pk %}" class="btn btn-warning">✏️ Editar producto</a>
+                </div>
+            {% endif %}
+        </div>
+
+        {# Columna derecha: información del producto #}
+        <div>
+            <h2 style="margin-bottom:0.5rem;">{{ producto.nombre }}</h2>
+            <p style="color:#7f8c8d; margin-bottom:1rem;">Referencia: <strong>{{ producto.numero_referencia }}</strong></p>
+
+            <span class="categoria" style="background:#ecf0f1; padding:0.3rem 0.6rem; border-radius:4px; font-size:0.9rem;">
+                {{ producto.get_categoria_display }}
+            </span>
+
+            <hr style="margin:1.5rem 0; border:none; border-top:1px solid #ecf0f1;">
+
+            {# Descripción #}
+            <h3 style="margin-bottom:0.5rem; color:#2c3e50;">Descripción</h3>
+            <p style="margin-bottom:1.5rem; color:#555;">{{ producto.descripcion }}</p>
+
+            {# Especificaciones técnicas si existen #}
+            {% if producto.especificaciones %}
+                <h3 style="margin-bottom:0.5rem; color:#2c3e50;">Especificaciones</h3>
+                <p style="margin-bottom:1.5rem; color:#555; white-space:pre-line;">{{ producto.especificaciones }}</p>
+            {% endif %}
+
+            {# Tabla de datos clave #}
+            <table class="table" style="margin-top:0;">
+                <tbody>
+                    <tr>
+                        <td><strong>Precio de venta</strong></td>
+                        <td style="color:#27ae60; font-weight:bold; font-size:1.2rem;">{{ producto.precio_venta }} €</td>
+                    </tr>
+                    {% if user.role.role == 'admin' %}
+                        {# Solo el admin ve el precio de compra y el margen #}
+                        <tr>
+                            <td><strong>Precio de compra</strong></td>
+                            <td>{{ producto.precio_compra }} €</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Margen de beneficio</strong></td>
+                            <td>
+                                {#
+                                    margen_beneficio viene del contexto: context['margen_beneficio'] = producto.margen_beneficio()
+                                    Usamos el filtro |floatformat:1 para mostrar solo 1 decimal.
+                                #}
+                                <strong style="color:#8e44ad;">{{ margen_beneficio|floatformat:1 }}%</strong>
+                            </td>
+                        </tr>
+                    {% endif %}
+                    <tr>
+                        <td><strong>Stock actual</strong></td>
+                        <td>
+                            {{ producto.stock_actual }} uds.
+                            {% if stock_bajo %}
+                                <span style="color:#e74c3c; font-weight:bold;">⚠️ Bajo</span>
+                            {% else %}
+                                <span style="color:#27ae60;">✓ OK</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Stock mínimo</strong></td>
+                        <td>{{ producto.stock_minimo }} uds.</td>
+                    </tr>
+                    {% if producto.ubicacion_almacen %}
+                        <tr>
+                            <td><strong>Ubicación almacén</strong></td>
+                            <td>{{ producto.ubicacion_almacen }}</td>
+                        </tr>
+                    {% endif %}
+                    {% if producto.color %}
+                        <tr>
+                            <td><strong>Color</strong></td>
+                            <td>{{ producto.color }}</td>
+                        </tr>
+                    {% endif %}
+                    <tr>
+                        <td><strong>Proveedor</strong></td>
+                        <td>
+                            {% if user.role.role != 'cliente' %}
+                                <a href="{% url 'detalle_proveedor' producto.proveedor.pk %}">
+                                    {{ producto.proveedor.nombre_empresa }}
+                                </a>
+                            {% else %}
+                                {{ producto.proveedor.nombre_empresa }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Añadido el</strong></td>
+                        {# |date:"d/m/Y" formatea la fecha: 01/01/2025 #}
+                        <td>{{ producto.created_at|date:"d/m/Y" }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

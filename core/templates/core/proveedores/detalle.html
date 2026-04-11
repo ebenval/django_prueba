@@ -1,0 +1,143 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ proveedor.nombre_empresa }} - Proveedor{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+
+    <div style="margin-bottom:1rem;">
+        <a href="{% url 'lista_proveedores' %}" style="color:#3498db; text-decoration:none;">← Volver a proveedores</a>
+    </div>
+
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+        <h2>{{ proveedor.nombre_empresa }}</h2>
+        <span style="background:#ecf0f1; padding:0.4rem 0.8rem; border-radius:4px; font-size:0.9rem; color:#7f8c8d;">
+            CIF: {{ proveedor.cif }}
+        </span>
+    </div>
+
+    {# Dos columnas: datos de contacto y datos de facturación #}
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:2rem; margin-bottom:2rem;">
+
+        {# Columna 1: Datos de contacto #}
+        <div style="background:#f8f9fa; padding:1.5rem; border-radius:8px; border-left:4px solid #3498db;">
+            <h3 style="color:#2c3e50; margin-bottom:1rem;">📋 Datos de contacto</h3>
+            <table style="width:100%; font-size:0.95rem;">
+                <tr>
+                    <td style="padding:0.4rem 0; color:#7f8c8d; width:40%;">Persona de contacto</td>
+                    <td style="padding:0.4rem 0; font-weight:500;">{{ proveedor.persona_contacto }}</td>
+                </tr>
+                <tr>
+                    <td style="padding:0.4rem 0; color:#7f8c8d;">Teléfono</td>
+                    <td style="padding:0.4rem 0;">{{ proveedor.telefono }}</td>
+                </tr>
+                <tr>
+                    <td style="padding:0.4rem 0; color:#7f8c8d;">Email</td>
+                    <td style="padding:0.4rem 0;">
+                        <a href="mailto:{{ proveedor.email }}" style="color:#3498db;">{{ proveedor.email }}</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:0.4rem 0; color:#7f8c8d;">Dirección</td>
+                    <td style="padding:0.4rem 0;">{{ proveedor.direccion }}</td>
+                </tr>
+                <tr>
+                    <td style="padding:0.4rem 0; color:#7f8c8d;">Ciudad</td>
+                    <td style="padding:0.4rem 0;">{{ proveedor.ciudad }}, {{ proveedor.codigo_postal }}</td>
+                </tr>
+                <tr>
+                    <td style="padding:0.4rem 0; color:#7f8c8d;">País</td>
+                    <td style="padding:0.4rem 0;">{{ proveedor.pais }}</td>
+                </tr>
+            </table>
+        </div>
+
+        {# Columna 2: Datos de facturación #}
+        <div style="background:#f8f9fa; padding:1.5rem; border-radius:8px; border-left:4px solid #27ae60;">
+            <h3 style="color:#2c3e50; margin-bottom:1rem;">💰 Facturación</h3>
+            <table style="width:100%; font-size:0.95rem;">
+                <tr>
+                    <td style="padding:0.4rem 0; color:#7f8c8d; width:50%;">Descuento aplicado</td>
+                    <td style="padding:0.4rem 0;">
+                        {% if proveedor.descuento_porcentaje > 0 %}
+                            <strong style="color:#27ae60;">{{ proveedor.descuento_porcentaje }}%</strong>
+                        {% else %}
+                            Sin descuento
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:0.4rem 0; color:#7f8c8d;">IVA</td>
+                    <td style="padding:0.4rem 0;"><strong>{{ proveedor.iva }}%</strong></td>
+                </tr>
+                <tr>
+                    <td style="padding:0.4rem 0; color:#7f8c8d;">Facturación total</td>
+                    <td style="padding:0.4rem 0;">
+                        {#
+                            facturacion_total viene del contexto (views.py):
+                            context['facturacion_total'] = proveedor.facturacion_total()
+                            Usa el método que añadimos al modelo Proveedor.
+                            |floatformat:2 muestra siempre 2 decimales.
+                        #}
+                        <strong style="color:#8e44ad; font-size:1.1rem;">{{ facturacion_total|floatformat:2 }} €</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:0.4rem 0; color:#7f8c8d;">Productos suministrados</td>
+                    <td style="padding:0.4rem 0;"><strong>{{ productos|length }}</strong></td>
+                </tr>
+                <tr>
+                    <td style="padding:0.4rem 0; color:#7f8c8d;">Alta en sistema</td>
+                    <td style="padding:0.4rem 0;">{{ proveedor.created_at|date:"d/m/Y" }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    {# Lista de productos de este proveedor #}
+    <h3 style="color:#2c3e50; margin-bottom:1rem;">📦 Productos de {{ proveedor.nombre_empresa }}</h3>
+
+    {% if productos %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Referencia</th>
+                    <th>Categoría</th>
+                    <th>Precio venta</th>
+                    <th>Stock</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for producto in productos %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'detalle_producto' producto.pk %}" style="color:#3498db;">
+                                {{ producto.nombre }}
+                            </a>
+                        </td>
+                        <td style="color:#7f8c8d; font-size:0.9rem;">{{ producto.numero_referencia }}</td>
+                        <td>{{ producto.get_categoria_display }}</td>
+                        <td><strong>{{ producto.precio_venta }} €</strong></td>
+                        <td>{{ producto.stock_actual }} uds.</td>
+                        <td>
+                            {% if producto.alertar_stock_bajo %}
+                                <span class="badge" style="background:#e74c3c; color:white;">⚠️ Stock bajo</span>
+                            {% else %}
+                                <span class="badge" style="background:#27ae60; color:white;">✓ OK</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p style="color:#7f8c8d;">Este proveedor no tiene productos registrados.</p>
+    {% endif %}
+</div>
+{% endblock %}

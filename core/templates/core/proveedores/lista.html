@@ -1,0 +1,76 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Proveedores - Sistema de Gestión{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+        <h2>Gestión de Proveedores</h2>
+        {% if user.role.role == 'admin' %}
+            <a href="{% url 'crear_proveedor' %}" class="btn btn-success">+ Nuevo Proveedor</a>
+        {% endif %}
+    </div>
+
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+
+    {# Búsqueda por nombre o email #}
+    <form method="GET" action="{% url 'lista_proveedores' %}" style="margin-bottom:1.5rem; display:flex; gap:1rem;">
+        <input
+            type="text"
+            name="q"
+            value="{{ busqueda }}"
+            placeholder="Buscar por nombre o email..."
+            style="flex:1; padding:0.6rem 1rem; border:1px solid #ddd; border-radius:4px; font-size:1rem;"
+        >
+        <button type="submit" class="btn btn-info">Buscar</button>
+        <a href="{% url 'lista_proveedores' %}" class="btn btn-warning">Limpiar</a>
+    </form>
+
+    {% if proveedores %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Empresa</th>
+                    <th>CIF</th>
+                    <th>Contacto</th>
+                    <th>Teléfono</th>
+                    <th>Descuento</th>
+                    <th>IVA</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for proveedor in proveedores %}
+                    <tr>
+                        <td><strong>{{ proveedor.nombre_empresa }}</strong></td>
+                        <td style="color:#7f8c8d; font-size:0.9rem;">{{ proveedor.cif }}</td>
+                        <td>
+                            {{ proveedor.persona_contacto }}<br>
+                            <small style="color:#3498db;">{{ proveedor.email }}</small>
+                        </td>
+                        <td>{{ proveedor.telefono }}</td>
+                        <td>
+                            {# Si tiene descuento lo destacamos en verde #}
+                            {% if proveedor.descuento_porcentaje > 0 %}
+                                <span style="color:#27ae60; font-weight:bold;">{{ proveedor.descuento_porcentaje }}%</span>
+                            {% else %}
+                                <span style="color:#bdc3c7;">—</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ proveedor.iva }}%</td>
+                        <td>
+                            <a href="{% url 'detalle_proveedor' proveedor.pk %}" class="btn btn-sm btn-info">Ver</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p style="text-align:center; color:#7f8c8d; margin-top:3rem;">
+            No se encontraron proveedores{% if busqueda %} para "<strong>{{ busqueda }}</strong>"{% endif %}.
+        </p>
+    {% endif %}
+</div>
+{% endblock %}

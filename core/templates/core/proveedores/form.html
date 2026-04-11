@@ -1,0 +1,149 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ titulo }} - Proveedores{% endblock %}
+
+{% block content %}
+<div class="dashboard" style="max-width:700px; margin:0 auto;">
+
+    <div style="margin-bottom:1rem;">
+        <a href="{% url 'lista_proveedores' %}" style="color:#3498db; text-decoration:none;">← Volver a proveedores</a>
+    </div>
+
+    <h2 style="margin-bottom:1.5rem;">{{ titulo }}</h2>
+
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+
+    {#
+        Este formulario NO tiene enctype="multipart/form-data" porque
+        Proveedor no tiene campos de archivo (ImageField).
+        Solo se necesita ese atributo cuando hay subida de ficheros.
+    #}
+    <form method="POST">
+        {% csrf_token %}
+
+        <h3 style="color:#2c3e50; margin-bottom:1rem; font-size:1rem; border-bottom:1px solid #ecf0f1; padding-bottom:0.5rem;">
+            Datos de la empresa
+        </h3>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+            <div class="form-group">
+                <label style="display:block; margin-bottom:0.3rem; font-weight:500; color:#2c3e50;">
+                    Nombre empresa <span style="color:#e74c3c;">*</span>
+                </label>
+                {{ form.nombre_empresa }}
+                {% for error in form.nombre_empresa.errors %}
+                    <span style="color:#e74c3c; font-size:0.9rem;">{{ error }}</span>
+                {% endfor %}
+            </div>
+            <div class="form-group">
+                <label style="display:block; margin-bottom:0.3rem; font-weight:500; color:#2c3e50;">
+                    CIF <span style="color:#e74c3c;">*</span>
+                </label>
+                {{ form.cif }}
+                {% for error in form.cif.errors %}
+                    <span style="color:#e74c3c; font-size:0.9rem;">{{ error }}</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:1rem;">
+            <label style="display:block; margin-bottom:0.3rem; font-weight:500; color:#2c3e50;">
+                Persona de contacto <span style="color:#e74c3c;">*</span>
+            </label>
+            {{ form.persona_contacto }}
+            {% for error in form.persona_contacto.errors %}
+                <span style="color:#e74c3c; font-size:0.9rem;">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+            <div class="form-group">
+                <label style="display:block; margin-bottom:0.3rem; font-weight:500; color:#2c3e50;">
+                    Teléfono <span style="color:#e74c3c;">*</span>
+                </label>
+                {{ form.telefono }}
+                {% for error in form.telefono.errors %}
+                    <span style="color:#e74c3c; font-size:0.9rem;">{{ error }}</span>
+                {% endfor %}
+            </div>
+            <div class="form-group">
+                <label style="display:block; margin-bottom:0.3rem; font-weight:500; color:#2c3e50;">
+                    Email <span style="color:#e74c3c;">*</span>
+                </label>
+                {{ form.email }}
+                {% for error in form.email.errors %}
+                    <span style="color:#e74c3c; font-size:0.9rem;">{{ error }}</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <h3 style="color:#2c3e50; margin:1.5rem 0 1rem; font-size:1rem; border-bottom:1px solid #ecf0f1; padding-bottom:0.5rem;">
+            Dirección
+        </h3>
+
+        <div class="form-group" style="margin-bottom:1rem;">
+            <label style="display:block; margin-bottom:0.3rem; font-weight:500; color:#2c3e50;">
+                Dirección <span style="color:#e74c3c;">*</span>
+            </label>
+            {{ form.direccion }}
+            {% for error in form.direccion.errors %}
+                <span style="color:#e74c3c; font-size:0.9rem;">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div style="display:grid; grid-template-columns:2fr 1fr 1fr; gap:1rem; margin-bottom:1rem;">
+            <div class="form-group">
+                <label style="display:block; margin-bottom:0.3rem; font-weight:500; color:#2c3e50;">Ciudad</label>
+                {{ form.ciudad }}
+                {% for error in form.ciudad.errors %}
+                    <span style="color:#e74c3c; font-size:0.9rem;">{{ error }}</span>
+                {% endfor %}
+            </div>
+            <div class="form-group">
+                <label style="display:block; margin-bottom:0.3rem; font-weight:500; color:#2c3e50;">C.P.</label>
+                {{ form.codigo_postal }}
+            </div>
+            <div class="form-group">
+                <label style="display:block; margin-bottom:0.3rem; font-weight:500; color:#2c3e50;">País</label>
+                {{ form.pais }}
+            </div>
+        </div>
+
+        <h3 style="color:#2c3e50; margin:1.5rem 0 1rem; font-size:1rem; border-bottom:1px solid #ecf0f1; padding-bottom:0.5rem;">
+            Condiciones comerciales
+        </h3>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
+            <div class="form-group">
+                <label style="display:block; margin-bottom:0.3rem; font-weight:500; color:#2c3e50;">
+                    Descuento (%)
+                </label>
+                {{ form.descuento_porcentaje }}
+                {% for error in form.descuento_porcentaje.errors %}
+                    <span style="color:#e74c3c; font-size:0.9rem;">{{ error }}</span>
+                {% endfor %}
+            </div>
+            <div class="form-group">
+                <label style="display:block; margin-bottom:0.3rem; font-weight:500; color:#2c3e50;">
+                    IVA (%)
+                </label>
+                {{ form.iva }}
+                {% for error in form.iva.errors %}
+                    <span style="color:#e74c3c; font-size:0.9rem;">{{ error }}</span>
+                {% endfor %}
+            </div>
+            <div class="form-group" style="display:flex; align-items:center; gap:0.5rem; padding-top:1.8rem;">
+                {{ form.activo }}
+                <label style="font-weight:500; color:#2c3e50; margin:0;">Proveedor activo</label>
+            </div>
+        </div>
+
+        <div style="display:flex; gap:1rem;">
+            <button type="submit" class="btn btn-success">💾 Guardar proveedor</button>
+            <a href="{% url 'lista_proveedores' %}" class="btn btn-warning">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

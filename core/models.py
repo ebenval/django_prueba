@@ -70,6 +70,14 @@ class Proveedor(TimeStampedModel):
     def __str__(self):
         return self.nombre_empresa
     
+    def facturacion_total(self):
+        """Suma total de compras recibidas de este proveedor."""
+        from django.db.models import Sum
+        resultado = self.compras.filter(estado='recibida').aggregate(
+            total=Sum('precio_unitario')
+        )
+        return resultado['total'] or 0
+
     class Meta:
         verbose_name = "Proveedor"
         verbose_name_plural = "Proveedores"
@@ -114,7 +122,7 @@ class Producto(TimeStampedModel):
     
     def alertar_stock_bajo(self):
         """Devuelve True si el stock está al 90% o menos del stock mínimo."""
-        umbral = (self.stock_minimo * 10) / 100
+        umbral = self.stock_minimo * 0.9
         return self.stock_actual <= umbral
     
     def margen_beneficio(self):

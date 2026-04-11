@@ -1,0 +1,59 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ titulo }} - Productos{% endblock %}
+
+{% block content %}
+<div class="dashboard" style="max-width:700px; margin:0 auto;">
+
+    <div style="margin-bottom:1rem;">
+        <a href="{% url 'lista_productos' %}" style="color:#3498db; text-decoration:none;">← Volver al catálogo</a>
+    </div>
+
+    <h2 style="margin-bottom:1.5rem;">{{ titulo }}</h2>
+
+    {# Errores generales del formulario #}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+
+    {#
+        enctype="multipart/form-data" es obligatorio cuando el formulario
+        incluye campos de archivo (ImageField en este caso).
+        Sin este atributo, las imágenes nunca llegarían al servidor.
+    #}
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {#
+            {% csrf_token %} genera un token de seguridad oculto.
+            Django lo comprueba en cada POST para evitar ataques CSRF
+            (Cross-Site Request Forgery). Sin él, Django rechaza el formulario.
+        #}
+
+        {% for field in form %}
+            <div class="form-group" style="margin-bottom:1rem;">
+                <label for="{{ field.id_for_label }}" style="display:block; margin-bottom:0.3rem; font-weight:500; color:#2c3e50;">
+                    {{ field.label }}
+                    {% if field.field.required %}<span style="color:#e74c3c;">*</span>{% endif %}
+                </label>
+
+                {{ field }}
+
+                {# Texto de ayuda del campo si existe #}
+                {% if field.help_text %}
+                    <small style="color:#7f8c8d;">{{ field.help_text }}</small>
+                {% endif %}
+
+                {# Errores de validación del campo específico #}
+                {% for error in field.errors %}
+                    <span style="color:#e74c3c; font-size:0.9rem;">{{ error }}</span>
+                {% endfor %}
+            </div>
+        {% endfor %}
+
+        <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+            <button type="submit" class="btn btn-success">💾 Guardar</button>
+            <a href="{% url 'lista_productos' %}" class="btn btn-warning">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
