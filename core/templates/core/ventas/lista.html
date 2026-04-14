@@ -1,42 +1,40 @@
 {% extends 'core/base.html' %}
-
+ 
 {% block title %}Ventas - Sistema de Gestión{% endblock %}
-
+ 
 {% block content %}
 <div class="dashboard">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-        {# El título cambia según el rol: cliente ve "Mis compras", admin ve "Todas las ventas" #}
         {% if user.role.role == 'cliente' %}
             <h2>Mis Compras</h2>
         {% else %}
             <h2>Gestión de Ventas</h2>
         {% endif %}
     </div>
-
+ 
     {% for message in messages %}
         <div class="alert alert-{{ message.tags }}">{{ message }}</div>
     {% endfor %}
-
-    {# Filtro por estado: solo muestra el filtro a admin y vendedor #}
+ 
     {% if user.role.role != 'cliente' %}
         <form method="GET" action="{% url 'lista_ventas' %}" style="margin-bottom:1.5rem; display:flex; gap:1rem; align-items:center;">
             <label style="font-weight:500; color:#2c3e50;">Filtrar por estado:</label>
             <select name="estado" style="padding:0.6rem 1rem; border:1px solid #ddd; border-radius:4px; font-size:1rem;">
                 <option value="">Todos</option>
-                <option value="pendiente"   {% if estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
-                <option value="completada"  {% if estado == 'completada' %}selected{% endif %}>Completada</option>
-                <option value="cancelada"   {% if estado == 'cancelada' %}selected{% endif %}>Cancelada</option>
+                <option value="pendiente"  {% if estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                <option value="completada" {% if estado == 'completada' %}selected{% endif %}>Completada</option>
+                <option value="cancelada"  {% if estado == 'cancelada' %}selected{% endif %}>Cancelada</option>
             </select>
             <button type="submit" class="btn btn-info">Filtrar</button>
             <a href="{% url 'lista_ventas' %}" class="btn btn-warning">Ver todas</a>
         </form>
     {% endif %}
-
+ 
     {% if ventas %}
         <table class="table">
             <thead>
                 <tr>
-                    <th>Nº Venta</th>
+                    <th>Nr Venta</th>
                     <th>Producto</th>
                     {% if user.role.role != 'cliente' %}
                         <th>Cliente</th>
@@ -57,22 +55,11 @@
                             </a>
                         </td>
                         {% if user.role.role != 'cliente' %}
-                            <td>{{ venta.cliente.username|default:"—" }}</td>
+                            <td>{{ venta.cliente.username|default:"" }}</td>
                         {% endif %}
                         <td>{{ venta.cantidad }} uds.</td>
+                        <td><strong>{{ venta.total_con_iva|floatformat:2 }} EUR</strong></td>
                         <td>
-                            {#
-                                Llamamos al método total_con_iva() del modelo directamente.
-                                Django permite llamar métodos sin paréntesis en los templates.
-                                |floatformat:2 asegura que siempre aparezcan 2 decimales.
-                            #}
-                            <strong>{{ venta.total_con_iva|floatformat:2 }} €</strong>
-                        </td>
-                        <td>
-                            {#
-                                Usamos clases CSS distintas según el estado.
-                                badge-completada → verde, badge-pendiente → naranja, badge-cancelada → rojo
-                            #}
                             {% if venta.estado == 'completada' %}
                                 <span class="badge badge-success">Completada</span>
                             {% elif venta.estado == 'pendiente' %}
@@ -81,27 +68,23 @@
                                 <span class="badge badge-cancelled">Cancelada</span>
                             {% endif %}
                         </td>
-                        {# |date:"d/m/Y H:i" formatea: 01/01/2025 14:30 #}
                         <td style="color:#7f8c8d; font-size:0.9rem;">{{ venta.fecha_venta|date:"d/m/Y H:i" }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
-
-        {# Resumen de totales: solo para admin y vendedor #}
+ 
         {% if user.role.role != 'cliente' %}
-            <div style="margin-top:1.5rem; background:#f8f9fa; padding:1rem 1.5rem; border-radius:8px; display:flex; gap:2rem; flex-wrap:wrap;">
-                <div>
-                    <p style="color:#7f8c8d; font-size:0.9rem;">Total ventas mostradas</p>
-                    <p style="font-size:1.3rem; font-weight:bold; color:#2c3e50;">{{ ventas|length }}</p>
-                </div>
+            <div style="margin-top:1.5rem; background:#f8f9fa; padding:1rem 1.5rem; border-radius:8px;">
+                <p style="color:#7f8c8d; font-size:0.9rem;">Total ventas mostradas</p>
+                <p style="font-size:1.3rem; font-weight:bold; color:#2c3e50;">{{ ventas|length }}</p>
             </div>
         {% endif %}
-
+ 
     {% else %}
         <p style="text-align:center; color:#7f8c8d; margin-top:3rem;">
             {% if user.role.role == 'cliente' %}
-                Aún no tienes compras registradas.
+                Aun no tienes compras registradas.
             {% else %}
                 No hay ventas registradas{% if estado %} con estado "{{ estado }}"{% endif %}.
             {% endif %}

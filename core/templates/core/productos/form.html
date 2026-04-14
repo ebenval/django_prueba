@@ -11,23 +11,12 @@
 
     <h2 style="margin-bottom:1.5rem;">{{ titulo }}</h2>
 
-    {# Errores generales del formulario #}
     {% for message in messages %}
         <div class="alert alert-{{ message.tags }}">{{ message }}</div>
     {% endfor %}
 
-    {#
-        enctype="multipart/form-data" es obligatorio cuando el formulario
-        incluye campos de archivo (ImageField en este caso).
-        Sin este atributo, las imágenes nunca llegarían al servidor.
-    #}
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
-        {#
-            {% csrf_token %} genera un token de seguridad oculto.
-            Django lo comprueba en cada POST para evitar ataques CSRF
-            (Cross-Site Request Forgery). Sin él, Django rechaza el formulario.
-        #}
 
         {% for field in form %}
             <div class="form-group" style="margin-bottom:1rem;">
@@ -38,12 +27,10 @@
 
                 {{ field }}
 
-                {# Texto de ayuda del campo si existe #}
                 {% if field.help_text %}
                     <small style="color:#7f8c8d;">{{ field.help_text }}</small>
                 {% endif %}
 
-                {# Errores de validación del campo específico #}
                 {% for error in field.errors %}
                     <span style="color:#e74c3c; font-size:0.9rem;">{{ error }}</span>
                 {% endfor %}

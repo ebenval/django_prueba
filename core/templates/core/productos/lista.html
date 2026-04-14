@@ -41,6 +41,22 @@
                         <p class="alert-stock">⚠️ Stock bajo</p>
                     {% endif %}
                     <a href="{% url 'detalle_producto' producto.pk %}" class="btn btn-info">Ver Detalles</a>
+                    <a href="{% url 'detalle_producto' producto.pk %}" class="btn btn-info">Ver Detalles</a>
+
+                    {% if user.role.role == 'cliente' and producto.stock_actual > 0 %}
+                        <a href="{% url 'crear_venta' %}?producto={{ producto.pk }}"
+                           class="btn btn-success" style="margin-top:0.5rem;">
+                            🛒 Comprar
+                        </a>
+                    {% elif user.role.role == 'cliente' and producto.stock_actual == 0 %}
+                        <span class="btn" style="margin-top:0.5rem; background:#ecf0f1; color:#95a5a6; cursor:not-allowed;">
+                            Sin stock
+                        </span>
+                    {% endif %}
+
+                    {% if user.role.role == 'admin' %}
+                        <a href="{% url 'editar_producto' producto.pk %}" class="btn btn-warning" style="margin-top:0.5rem;">Editar</a>
+                    {% endif %}
                 </div>
             </div>
         {% empty %}

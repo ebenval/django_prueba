@@ -1,0 +1,86 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Venta {{ venta.numero_venta }} - Detalle{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+
+    {# Mensajes flash #}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+
+    {# Barra de navegación superior: enlace para volver al listado #}
+    <div style="margin-bottom:1rem;">
+        <a href="{% url 'lista_ventas' %}" style="color:#3498db; text-decoration:none;">← Volver a ventas</a>
+    </div>
+
+    {# Información de la venta #}
+    <div style="background:#fff; padding:2rem; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+        <h2 style="margin-bottom:0.5rem;">Venta {{ venta.numero_venta }}</h2>
+        <p style="color:#7f8c8d; margin-bottom:1rem;">Fecha: <strong>{{ venta.fecha_venta|date:"d/m/Y H:i" }}</strong></p>
+
+        <span class="estado" style="background:{% if venta.estado == 'completada' %}#d4edda{% elif venta.estado == 'pendiente' %}#fff3cd{% else %}#f8d7da{% endif %}; padding:0.3rem 0.6rem; border-radius:4px; font-size:0.9rem;">
+            {{ venta.get_estado_display }}
+        </span>
+
+        <hr style="margin:1.5rem 0; border:none; border-top:1px solid #ecf0f1;">
+
+        {# Tabla de datos de la venta #}
+        <table class="table" style="margin-top:0;">
+            <tbody>
+                <tr>
+                    <td><strong>Cliente</strong></td>
+                    <td>{{ venta.cliente.username }} ({{ venta.cliente.email }})</td>
+                </tr>
+                <tr>
+                    <td><strong>Producto</strong></td>
+                    <td>
+                        <a href="{% url 'detalle_producto' venta.producto.pk %}">
+                            {{ venta.producto.nombre }}
+                        </a>
+                        <br>
+                        <small style="color:#7f8c8d;">Ref: {{ venta.producto.numero_referencia }}</small>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Cantidad</strong></td>
+                    <td>{{ venta.cantidad }} uds.</td>
+                </tr>
+                <tr>
+                    <td><strong>Precio unitario</strong></td>
+                    <td>{{ venta.precio_unitario }} €</td>
+                </tr>
+                {% if venta.descuento_aplicado > 0 %}
+                    <tr>
+                        <td><strong>Descuento aplicado</strong></td>
+                        <td>{{ venta.descuento_aplicado }}%</td>
+                    </tr>
+                {% endif %}
+                <tr>
+                    <td><strong>Total bruto</strong></td>
+                    <td><strong>{{ venta.total_bruto }} €</strong></td>
+                </tr>
+                {% if venta.descuento_aplicado > 0 %}
+                    <tr>
+                        <td><strong>Descuento</strong></td>
+                        <td>-{{ venta.total_descuento }} €</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total neto</strong></td>
+                        <td><strong>{{ venta.total_neto }} €</strong></td>
+                    </tr>
+                {% endif %}
+                <tr>
+                    <td><strong>IVA ({{ venta.producto.proveedor.iva }}%)</strong></td>
+                    <td>{{ venta.total_con_iva|sub:venta.total_neto }} €</td>
+                </tr>
+                <tr>
+                    <td><strong><span style="font-size:1.2rem;">Total con IVA</span></strong></td>
+                    <td><strong style="color:#27ae60; font-size:1.2rem;">{{ venta.total_con_iva }} €</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

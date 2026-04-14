@@ -1,31 +1,4 @@
-"""
-Management command para poblar la base de datos con datos de prueba.
 
-¿QUÉ ES UN MANAGEMENT COMMAND?
-================================
-Django permite crear tus propios comandos que se ejecutan con:
-    python manage.py nombre_comando
-
-Exactamente igual que los comandos que ya conoces:
-    python manage.py migrate
-    python manage.py createsuperuser
-    python manage.py runserver
-
-Para que Django reconozca este archivo como un comando, necesita estar en:
-    core/
-    └── management/
-        ├── __init__.py          ← archivo vacío (marca la carpeta como paquete Python)
-        └── commands/
-            ├── __init__.py      ← archivo vacío
-            └── poblar_bd.py     ← este archivo
-
-La clase Command DEBE llamarse exactamente "Command" y heredar de BaseCommand.
-El método handle() es el que se ejecuta cuando corres el comando.
-
-USO:
-    python manage.py poblar_bd            → crea todos los datos
-    python manage.py poblar_bd --limpiar  → borra todo y vuelve a crear
-"""
 
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
@@ -149,7 +122,8 @@ class Command(BaseCommand):
                 'first_name': 'Carlos',
                 'last_name': 'García',
                 'rol': 'admin',
-                'is_staff': True,   # Permite acceder al panel /admin/
+                'is_staff': True,
+                'is_superuser': True,
             },
             {
                 'username': 'vendedor1',
@@ -202,11 +176,11 @@ class Command(BaseCommand):
             rol = datos.pop('rol')
             password = datos.pop('password')
             is_staff = datos.pop('is_staff')
+            is_superuser = datos.pop('is_superuser', False)
 
-            # get_or_create busca por 'username'. Si no existe, usa 'defaults' para crearlo.
             usuario, creado = User.objects.get_or_create(
                 username=datos['username'],
-                defaults={**datos, 'is_staff': is_staff}
+                defaults={**datos, 'is_staff': is_staff, 'is_superuser': is_superuser}
             )
 
             if creado:

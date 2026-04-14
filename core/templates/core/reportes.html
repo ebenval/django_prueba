@@ -6,26 +6,15 @@
 <div class="reportes-container">
     <h2>Reportes y Estadísticas</h2>
 
-    {# ===== GRÁFICA DE EVOLUCIÓN MENSUAL ===== #}
-    {#
-        Explicación del bloque de gráfica:
-        - Cargamos Chart.js desde jsdelivr.net (CDN gratuito, no necesita instalación)
-        - El <canvas> es el lienzo donde Chart.js dibuja la gráfica
-        - Las variables {{ grafica_etiquetas|safe }} inyectan el JSON desde Django
-        - El filtro |safe le dice a Django "no escapes este texto, es JSON seguro"
-          (sin |safe Django convertiría las comillas en &quot; y rompería el JS)
-    #}
     <div class="report-section">
         <h3>📈 Evolución Mensual de Ventas y Compras</h3>
         <p class="report-desc">Unidades vendidas y compradas en los últimos 12 meses (solo operaciones completadas).</p>
-
         <div class="grafica-wrapper">
             <canvas id="graficaEvolucion" height="100"></canvas>
         </div>
     </div>
 
     <div class="reportes-grid">
-        <!-- Productos Bajo Stock -->
         <div class="report-section">
             <h3>⚠️ Productos con Stock Bajo</h3>
             <table class="table">
@@ -54,8 +43,7 @@
                 </tbody>
             </table>
         </div>
-        
-        <!-- Productos Más Vendidos -->
+
         <div class="report-section">
             <h3>🔥 Productos Más Vendidos</h3>
             <table class="table">
@@ -79,8 +67,7 @@
                 </tbody>
             </table>
         </div>
-        
-        <!-- Ventas por Categoría -->
+
         <div class="report-section">
             <h3>📊 Ventas por Categoría</h3>
             <table class="table">
@@ -105,51 +92,31 @@
     </div>
 </div>
 
-{# Cargamos Chart.js al final del contenido para no bloquear la carga de la página #}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <script>
-    /*
-     * Leemos los datos JSON que Django inyectó en el contexto.
-     * 
-     * {{ grafica_etiquetas|safe }} se convierte en algo como:
-     *   ["Ene 2025", "Feb 2025", ..., "Dic 2025"]
-     * 
-     * JSON.parse() convierte esa cadena de texto en un array JavaScript real
-     * con el que Chart.js puede trabajar.
-     */
-    const etiquetas = JSON.parse('{{ grafica_etiquetas|safe }}');
+    const etiquetas   = JSON.parse('{{ grafica_etiquetas|safe }}');
     const datosVentas = JSON.parse('{{ grafica_ventas|safe }}');
-    const datosCompras = JSON.parse('{{ grafica_compras|safe }}');
+    const datosCompras= JSON.parse('{{ grafica_compras|safe }}');
 
-    /*
-     * Creamos la gráfica de líneas.
-     * 
-     * Chart.js necesita:
-     *   - El elemento canvas donde dibujar (getElementById)
-     *   - El tipo de gráfica: 'line', 'bar', 'pie', 'doughnut'...
-     *   - Los datos: etiquetas para el eje X y datasets con los valores
-     *   - Las opciones: título, ejes, leyenda, etc.
-     */
     const ctx = document.getElementById('graficaEvolucion').getContext('2d');
 
     new Chart(ctx, {
         type: 'line',
-
         data: {
-            labels: etiquetas,   // Eje X: nombres de los meses
+            labels: etiquetas,
             datasets: [
                 {
                     label: 'Ventas (unidades)',
                     data: datosVentas,
-                    borderColor: '#7F77DD',        // Color de la línea
-                    backgroundColor: 'rgba(127, 119, 221, 0.1)',  // Relleno semitransparente
+                    borderColor: '#7F77DD',
+                    backgroundColor: 'rgba(127, 119, 221, 0.1)',
                     borderWidth: 2,
                     pointBackgroundColor: '#7F77DD',
                     pointRadius: 4,
                     pointHoverRadius: 6,
-                    tension: 0.3,   // 0 = línea recta, 1 = muy curva. 0.3 es suave
-                    fill: true,     // Rellena el área bajo la línea
+                    tension: 0.3,
+                    fill: true
                 },
                 {
                     label: 'Compras a proveedores (unidades)',
@@ -161,29 +128,23 @@
                     pointRadius: 4,
                     pointHoverRadius: 6,
                     tension: 0.3,
-                    fill: true,
+                    fill: true
                 }
             ]
         },
-
         options: {
-            responsive: true,       // Se adapta al tamaño del contenedor
+            responsive: true,
             maintainAspectRatio: true,
-
             plugins: {
                 legend: {
-                    position: 'top',    // Leyenda arriba de la gráfica
+                    position: 'top',
                     labels: {
-                        usePointStyle: true,  // Círculos en lugar de rectángulos en la leyenda
+                        usePointStyle: true,
                         padding: 20,
                         font: { size: 13 }
                     }
                 },
                 tooltip: {
-                    /*
-                     * Personalizamos el texto del tooltip que aparece al pasar el ratón.
-                     * context.parsed.y contiene el valor del punto en el eje Y.
-                     */
                     callbacks: {
                         label: function(context) {
                             return context.dataset.label + ': ' + context.parsed.y + ' uds.';
@@ -191,32 +152,21 @@
                     }
                 }
             },
-
             scales: {
                 x: {
-                    grid: {
-                        display: false   // Ocultamos la cuadrícula vertical para que sea más limpio
-                    },
-                    ticks: {
-                        font: { size: 12 }
-                    }
+                    grid: { display: false },
+                    ticks: { font: { size: 12 } }
                 },
                 y: {
-                    beginAtZero: true,  // El eje Y empieza siempre en 0
+                    beginAtZero: true,
                     ticks: {
-                        /*
-                         * stepSize: 1 fuerza que el eje Y use solo números enteros.
-                         * Sin esto, si los valores son pequeños aparecerían decimales como 0.5, 1.5...
-                         */
                         stepSize: 1,
                         font: { size: 12 },
                         callback: function(value) {
                             return Number.isInteger(value) ? value : null;
                         }
                     },
-                    grid: {
-                        color: 'rgba(0,0,0,0.05)'   // Cuadrícula horizontal muy sutil
-                    }
+                    grid: { color: 'rgba(0,0,0,0.05)' }
                 }
             }
         }

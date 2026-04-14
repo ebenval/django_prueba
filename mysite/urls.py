@@ -28,6 +28,8 @@ urlpatterns = [
     
     # Ventas
     path('ventas/', views.lista_ventas, name='lista_ventas'),
+    path('ventas/crear/', views.crear_venta, name='crear_venta'),
+    path('ventas/<int:pk>/', views.detalle_venta, name='detalle_venta'),
     
     # Reportes
     path('reportes/', views.reportes, name='reportes'),

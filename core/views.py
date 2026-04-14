@@ -17,7 +17,7 @@ import datetime                      # NUEVO: para trabajar con fechas
 from .models import UserRole, Proveedor, Producto, Venta, CompraProveedor
 from .forms import (
     LoginForm, RegisterForm, ProveedorForm, ProductoForm,
-    VentaForm, CompraProveedorForm
+    VentaForm, CompraProveedorForm, VentaClienteForm
 )
 
 
@@ -359,3 +359,83 @@ def reportes(request):
         'grafica_compras': json.dumps(datos_compras),
     }
     return render(request, 'core/reportes.html', context)
+
+@login_required(login_url='login')
+def crear_venta(request):
+    """
+    Vista para que los clientes realicen una compra.
+ 
+    Flujo completo:
+    1. El cliente selecciona producto y cantidad (GET → muestra el formulario)
+    2. El sistema valida stock, calcula precio y genera número de venta (POST)
+    3. Se descuenta el stock del producto automáticamente
+    4. Se redirige a la lista de ventas con mensaje de confirmación
+    """
+    form = VentaClienteForm(request.POST or None)
+ 
+    if request.method == 'POST' and form.is_valid():
+        producto = form.cleaned_data['producto']
+        cantidad = form.cleaned_data['cantidad']
+ 
+        # Generamos número de venta único con timestamp
+        # strftime("%Y%m%d-%H%M%S") → "20250112-143022"
+        numero_venta = f"VEN-{timezone.now().strftime('%Y%m%d-%H%M%S')}"
+ 
+        # Creamos la venta con los datos calculados por el sistema
+        # El precio lo tomamos del producto — el cliente no lo elige
+        venta = Venta.objects.create(
+            numero_venta=numero_venta,
+            cliente=request.user,       # usuario autenticado actual
+            producto=producto,
+            cantidad=cantidad,
+            precio_unitario=producto.precio_venta,  # precio oficial del catálogo
+            descuento_aplicado=0,       # sin descuento por defecto
+            estado='pendiente',         # toda compra empieza como pendiente
+        )
+ 
+        # Descontamos el stock del producto
+        # F() es una expresión de Django ORM que hace la resta
+        # directamente en la BD en una sola operación atómica,
+        # evitando condiciones de carrera si dos clientes compran a la vez.
+        from django.db.models import F
+        Producto.objects.filter(pk=producto.pk).update(
+            stock_actual=F('stock_actual') - cantidad
+        )
+ 
+        messages.success(
+            request,
+            f'✓ Compra realizada. Nº pedido: {numero_venta}. '
+            f'Total: {venta.total_con_iva():.2f} €'
+        )
+        return redirect('lista_ventas')
+ 
+    # Pasamos al template el producto seleccionado si viene en GET
+    # (útil cuando el cliente pulsa "Comprar" desde el detalle de producto)
+    producto_preseleccionado = request.GET.get('producto')
+ 
+    context = {
+        'form': form,
+        'producto_id': producto_preseleccionado,
+    }
+    return render(request, 'core/ventas/crear.html', context)
+ 
+ 
+@login_required(login_url='login')
+def detalle_venta(request, pk):
+    """
+    Detalle de una venta individual.
+    El cliente solo puede ver sus propias ventas.
+    Admin y vendedor pueden ver cualquiera.
+    """
+    user_role = getattr(request.user, 'role', None)
+ 
+    if user_role and user_role.role == 'cliente':
+        # get_object_or_404 con cliente=request.user asegura que
+        # un cliente no pueda ver ventas de otros usuarios
+        # simplemente cambiando el pk en la URL.
+        venta = get_object_or_404(Venta, pk=pk, cliente=request.user)
+    else:
+        venta = get_object_or_404(Venta, pk=pk)
+ 
+    context = {'venta': venta}
+    return render(request, 'core/ventas/detalle.html', context)

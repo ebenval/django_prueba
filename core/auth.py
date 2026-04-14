@@ -2,45 +2,34 @@
 Utilidades de autenticación y autorización.
 """
 
-from django.contrib.auth.models import User, Group, Permission
-from django.contrib.auth.decorators import login_required, permission_required
-from django.http import HttpResponseForbidden
+from functools import wraps
+from django.contrib import messages
+from django.shortcuts import redirect
 
 
-def create_user_groups():
+def requiere_rol(*roles):
     """
-    Crea los grupos de usuarios predefinidos.
-    """
-    groups = ['Editores', 'Moderadores', 'Visitantes']
-    for group_name in groups:
-        Group.objects.get_or_create(name=group_name)
+    Decorador que restringe el acceso a una vista según el rol del usuario.
 
+    Uso:
+        @login_required(login_url='login')
+        @requiere_rol('admin')
+        def mi_vista(request): ...
 
-def check_user_permission(user, permission_name):
-    """
-    Verifica si un usuario tiene un permiso específico.
-    
+        @login_required(login_url='login')
+        @requiere_rol('admin', 'vendedor')
+        def otra_vista(request): ...
+
     Args:
-        user (User): El usuario a verificar.
-        permission_name (str): Nombre del permiso (ej: 'auth.add_user').
-    
-    Returns:
-        bool: True si el usuario tiene el permiso, False en caso contrario.
+        *roles: Roles permitidos ('admin', 'vendedor', 'cliente').
     """
-    return user.has_perm(permission_name)
-
-
-def add_user_to_group(user, group_name):
-    """
-    Añade un usuario a un grupo.
-    
-    Args:
-        user (User): El usuario a añadir.
-        group_name (str): Nombre del grupo.
-    
-    Returns:
-        Group: El grupo al que se añadió el usuario.
-    """
-    group, _ = Group.objects.get_or_create(name=group_name)
-    user.groups.add(group)
-    return group
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            user_role = getattr(request.user, 'role', None)
+            if user_role is None or user_role.role not in roles:
+                messages.error(request, 'No tienes permisos para acceder a esta sección.')
+                return redirect('dashboard')
+            return view_func(request, *args, **kwargs)
+        return wrapper
+    return decorator

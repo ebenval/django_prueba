@@ -1,0 +1,128 @@
+{% extends 'core/base.html' %}
+ 
+{% block title %}Realizar compra{% endblock %}
+ 
+{% block content %}
+<div class="dashboard" style="max-width:600px; margin:0 auto;">
+ 
+    <div style="margin-bottom:1rem;">
+        <a href="{% url 'lista_productos' %}" style="color:#3498db; text-decoration:none;">← Volver al catalogo</a>
+    </div>
+ 
+    <h2 style="margin-bottom:0.5rem;">Realizar compra</h2>
+    <p style="color:#7f8c8d; margin-bottom:1.5rem; font-size:0.95rem;">
+        Selecciona el producto y la cantidad. El precio se aplica automaticamente del catalogo.
+    </p>
+ 
+    <form method="POST">
+        {% csrf_token %}
+ 
+        <div class="form-group" style="margin-bottom:1rem;">
+            <label style="display:block; margin-bottom:0.4rem; font-weight:500; color:#2c3e50;">
+                Producto <span style="color:#e74c3c;">*</span>
+            </label>
+            {{ form.producto }}
+            {% for error in form.producto.errors %}
+                <span style="color:#e74c3c; font-size:0.9rem;">{{ error }}</span>
+            {% endfor %}
+        </div>
+ 
+        <div id="info-producto" style="display:none; background:#f8f9fa; border-radius:8px; padding:1rem; margin-bottom:1rem; border-left:4px solid #3498db;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+                <div>
+                    <p style="font-size:0.85rem; color:#7f8c8d; margin:0;">Precio unitario</p>
+                    <p style="font-size:1.3rem; font-weight:bold; color:#27ae60; margin:0;" id="info-precio">-</p>
+                </div>
+                <div>
+                    <p style="font-size:0.85rem; color:#7f8c8d; margin:0;">Stock disponible</p>
+                    <p style="font-size:1.3rem; font-weight:bold; color:#2c3e50; margin:0;" id="info-stock">-</p>
+                </div>
+            </div>
+        </div>
+ 
+        <div class="form-group" style="margin-bottom:1rem;">
+            <label style="display:block; margin-bottom:0.4rem; font-weight:500; color:#2c3e50;">
+                Cantidad <span style="color:#e74c3c;">*</span>
+            </label>
+            {{ form.cantidad }}
+            {% for error in form.cantidad.errors %}
+                <span style="color:#e74c3c; font-size:0.9rem; display:block; margin-top:0.3rem;">{{ error }}</span>
+            {% endfor %}
+        </div>
+ 
+        <div id="panel-total" style="display:none; background:#E1F5EE; border-radius:8px; padding:1rem 1.25rem; margin-bottom:1.5rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="color:#085041; font-weight:500;">Total estimado (sin IVA)</span>
+                <span style="font-size:1.4rem; font-weight:bold; color:#0F6E56;" id="total-estimado">-</span>
+            </div>
+            <p style="font-size:0.8rem; color:#0F6E56; margin-top:0.3rem; margin-bottom:0;">
+                * El total final incluira el IVA del proveedor al confirmar.
+            </p>
+        </div>
+ 
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger" style="margin-bottom:1rem;">
+                {% for error in form.non_field_errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+ 
+        <div style="display:flex; gap:1rem;">
+            <button type="submit" class="btn btn-success" style="flex:1;">
+                Confirmar compra
+            </button>
+            <a href="{% url 'lista_productos' %}" class="btn btn-warning">Cancelar</a>
+        </div>
+    </form>
+</div>
+ 
+<script>
+    const selectProducto = document.getElementById('id_producto');
+    const inputCantidad  = document.querySelector('input[name="cantidad"]');
+    const infoPanel      = document.getElementById('info-producto');
+    const panelTotal     = document.getElementById('panel-total');
+    const infoPrecio     = document.getElementById('info-precio');
+    const infoStock      = document.getElementById('info-stock');
+    const totalEl        = document.getElementById('total-estimado');
+ 
+    const productos = {
+        {% for producto in form.producto.queryset %}
+            "{{ producto.pk }}": {
+                precio: parseFloat("{{ producto.precio_venta|stringformat:'f' }}"),
+                stock: {{ producto.stock_actual }},
+                nombre: "{{ producto.nombre|escapejs }}"
+            }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    };
+ 
+    function actualizarInfo() {
+        const pk = selectProducto.value;
+        const cantidad = parseInt(inputCantidad.value) || 1;
+ 
+        if (pk && productos[pk]) {
+            const p = productos[pk];
+            infoPrecio.textContent = p.precio.toFixed(2) + ' EUR';
+            infoStock.textContent  = p.stock + ' uds.';
+            infoPanel.style.display = 'block';
+            inputCantidad.max = p.stock;
+            const total = (p.precio * cantidad).toFixed(2);
+            totalEl.textContent = total + ' EUR';
+            panelTotal.style.display = 'block';
+        } else {
+            infoPanel.style.display  = 'none';
+            panelTotal.style.display = 'none';
+        }
+    }
+ 
+    selectProducto.addEventListener('change', actualizarInfo);
+    inputCantidad.addEventListener('input', actualizarInfo);
+ 
+    const params = new URLSearchParams(window.location.search);
+    const productoParam = params.get('producto');
+    if (productoParam && selectProducto.querySelector('option[value="' + productoParam + '"]')) {
+        selectProducto.value = productoParam;
+        actualizarInfo();
+    }
+</script>
+{% endblock %}

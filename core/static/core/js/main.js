@@ -32,5 +32,5 @@ function showAlert(message, type = 'info') {
 // Ejemplo de uso cuando el DOM está listo
 document.addEventListener('DOMContentLoaded', function () {
     console.log('DOM está listo');
-    // Tu código aquí
+    
 });

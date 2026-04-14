@@ -138,3 +138,17 @@ class CompraProveedorForm(forms.ModelForm):
             'precio_unitario': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'estado': forms.Select(attrs={'class': 'form-control'}),
         }
+
+
+class VentaClienteForm(forms.Form):
+    """Formulario para que clientes realicen compras."""
+    producto = forms.ModelChoiceField(
+        queryset=Producto.objects.filter(activo=True),
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        label="Producto"
+    )
+    cantidad = forms.IntegerField(
+        min_value=1,
+        widget=forms.NumberInput(attrs={'class': 'form-control'}),
+        label="Cantidad"
+    )

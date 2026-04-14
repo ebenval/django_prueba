@@ -1,28 +1,4 @@
-"""
-Tests de la aplicación core.
 
-¿QUÉ ES UN TEST EN DJANGO?
-============================
-Un test es código que comprueba automáticamente que tu aplicación
-funciona como esperas. En lugar de probar manualmente en el navegador,
-escribes código que hace la prueba por ti.
-
-Ventaja clave: si más adelante cambias algo y rompes algo sin darte cuenta,
-los tests lo detectan al instante.
-
-CÓMO EJECUTAR LOS TESTS:
-    python manage.py test core                  → todos los tests de la app
-    python manage.py test core.tests.TestModelos → solo una clase
-    python manage.py test core.tests.TestModelos.test_alerta_stock_bajo → solo uno
-
-ESTRUCTURA:
-    Cada clase agrupa tests relacionados y hereda de TestCase.
-    Cada método que empiece por test_ es un test individual.
-    setUp() se ejecuta ANTES de cada test para preparar datos limpios.
-
-    Django crea una base de datos temporal solo para tests y la destruye
-    al terminar. Nunca toca tu base de datos real (db.sqlite3).
-"""
 
 from decimal import Decimal
 from django.test import TestCase, Client
